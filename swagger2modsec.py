@@ -26,7 +26,7 @@ parser.add_option("-i", "--input", dest="infile", help="Input file or HTTP(s) UR
 parser.add_option("-o", "--output", dest="outfile", help="Output file", default="out.conf")
 parser.add_option("--block-action", dest="blockaction", help="Set the default block action", default="deny")
 parser.add_option("--tag", dest="tag", help="Set the rules base tag", default="SWAGGER")
-parser.add_option("-f", "--filter-path", dest="filterpath", help="Filtered paths (use multiple times)", default=[], action="append")
+parser.add_option("-f", "--filter-path", dest="filterpath", help="Filtered paths (use multiple times), like /something", default=[], action="append")
 parser.add_option("-s", "--start-from", dest="startfrom", help="Start from this modsecurity rule id (see https://www.modsecurity.org/CRS/Documentation/ruleid.html)", default=10000, type=int)
 (options, args) = parser.parse_args()
 
@@ -180,6 +180,14 @@ printBanner(options.infile,swagger)
 printFormattedRule("SecAction","","","id:{0},phase:request,t:none,log,setenv:'isValidURI=No'".format(ruleId,blockAction))
 
 for endpoint in swagger.getEndpoints():
+
+    skipPath = False
+    for filteredpath in options.filterpath:
+        if endpoint.startswith(filteredpath):
+            skipPath = True
+
+    if skipPath:
+        continue
 
     # Filter methods
     methods = swagger.getEndpointMethods(endpoint)
