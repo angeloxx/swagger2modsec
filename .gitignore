@@ -1,3 +1,4 @@
 in.json
 out.conf
 *.pyc
+.vscode

@@ -7,6 +7,7 @@ In these days I'm looking for a fast way to create modsecurity validation rules 
 This script uses py_essentials and logging additional modules, but I didn't created the requirements.txt file at the moment. Libmodsecurity is not needed, but I know that pymodsecurity binding exists and can be used to validate rules and test it so I suggest to install:
 
     sudo apt install libmodsecurity-dev
+    sudo pip3 install -r requirements.txt
 
 and perform basic validatation with:
 
