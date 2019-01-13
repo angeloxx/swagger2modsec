@@ -17,8 +17,22 @@ Remember that the only valid Linux distribution is Debian.
 
 # Usage
 
-    python3.5 swagger2modsec.py -i https://raw.githubusercontent.com/OAI/OpenAPI-Specification/master/examples/v2.0/json/uber.json
-    python3.5 swagger2modsec.py -i https://raw.githubusercontent.com/OAI/OpenAPI-Specification/master/examples/v2.0/json/petstore-with-external-docs.json
+    python3 swagger2modsec.py -i https://raw.githubusercontent.com/OAI/OpenAPI-Specification/master/examples/v2.0/json/uber.json
+    python3 swagger2modsec.py -i https://raw.githubusercontent.com/OAI/OpenAPI-Specification/master/examples/v2.0/json/petstore-with-external-docs.json
+
+## Use in a Windows development environment
+
+Using a Windows-based host with Linux services you can start a web server and test rules
+
+    sudo apt install -y libapache2-mod-security apache2
+    sudo a2enmod security2
+    sudo rm /etc/apache2/sites-enabled/000*
+    sudo ln -s $(pwd)/apache2/vhost.conf /etc/apache2/sites-enabled/
+    sudo ln -s $(pwd)/out.inc /etc/apache2/sites-enabled/
+
+    python3 swagger2modsec.py -i SAMPLE1.json -o out.inc
+    sudo service apache2 restart
+    
 
 # TODO
 

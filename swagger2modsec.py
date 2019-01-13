@@ -24,7 +24,7 @@ logging.getLogger('swagger2modsec').setLevel(logging.ERROR)
 parser = OptionParser()
 parser.add_option("-i", "--input", dest="infile", help="Input file or HTTP(s) URL", default="in.json")
 parser.add_option("-o", "--output", dest="outfile", help="Output file", default="out.conf")
-parser.add_option("--block-action", dest="blockaction", help="Set the default block action", default="deny")
+parser.add_option("--block-action", dest="blockaction", help="Set the default block action", default="deny,status:406")
 parser.add_option("--tag", dest="tag", help="Set the rules base tag", default="SWAGGER")
 parser.add_option("-f", "--filter-path", dest="filterpath", help="Filtered paths (use multiple times), like /something", default=[], action="append")
 parser.add_option("-s", "--start-from", dest="startfrom", help="Start from this modsecurity rule id (see https://www.modsecurity.org/CRS/Documentation/ruleid.html)", default=10000, type=int)
@@ -62,7 +62,7 @@ class Swagger:
             return ret
         
         for method in self.swagger["paths"][endpoint]:
-            ret.append(method)
+            ret.append(method.toUpper())
 
         return ret
 
@@ -202,7 +202,7 @@ for endpoint in swagger.getEndpoints():
 
     tag = "{}/METHOD_NOT_ALLOWED".format(options.tag)
     printFormattedRule("SecRule","REQUEST_URI",endpointURI,"id:{0},phase:request,t:none,log,tag:'{1}',{2},chain".format(ruleId,tag,blockAction))
-    printFormattedRule("SecRule","REQUEST_METHOD","!^({})$".format("|".join(methods)),"t:none")
+    printFormattedRule("SecRule","REQUEST_METHOD","!@within {}".format(" ".join(methods)),"t:none")
 
     printWhiteline()
 
