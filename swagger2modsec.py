@@ -6,6 +6,9 @@ from py_essentials import hashing as hs
 
 # Sample
 # https://raw.githubusercontent.com/OAI/OpenAPI-Specification/master/examples/v2.0/json/petstore-with-external-docs.json
+# Specs
+# https://docs.swagger.io/spec.html
+
 
 #############################################
 # vars
@@ -62,7 +65,7 @@ class Swagger:
             return ret
         
         for method in self.swagger["paths"][endpoint]:
-            ret.append(method.toUpper())
+            ret.append(method)
 
         return ret
 
@@ -83,9 +86,11 @@ class Swagger:
                                 return "[0-9]+"
                             if parameterValue["type"] == "string":
                                 return "[\w\s\d]+"
+                            if parameterValue["type"] == "boolean":
+                                return "(true|false)"
 
                             if parameterValue["type"] == "number":
-                                if parameterValue["format"] == "double":
+                                if parameterValue["format"] == "double" or parameterValue["format"] == "float":
                                    return "(-?)(0|([1-9][0-9]*))(\\.[0-9]+)?"
         except Exception as e:
             logging.error("getEndpointURIParameterValidator({0},{1},{2})".format(_endpoint, _parameter, _method))
@@ -202,7 +207,7 @@ for endpoint in swagger.getEndpoints():
 
     tag = "{}/METHOD_NOT_ALLOWED".format(options.tag)
     printFormattedRule("SecRule","REQUEST_URI",endpointURI,"id:{0},phase:request,t:none,log,tag:'{1}',{2},chain".format(ruleId,tag,blockAction))
-    printFormattedRule("SecRule","REQUEST_METHOD","!@within {}".format(" ".join(methods)),"t:none")
+    printFormattedRule("SecRule","REQUEST_METHOD","!@within {}".format(" ".join(methods).upper()),"t:none")
 
     printWhiteline()
 
@@ -210,23 +215,28 @@ for endpoint in swagger.getEndpoints():
 
         tag = "{}/PARAMETER_NAME_VALIDATION".format(options.tag)
         printFormattedRule("SecRule","REQUEST_URI",endpointURI,"id:{0},phase:request,t:none,log,tag:'{1}',{2},chain".format(ruleId,tag,blockAction))
-        printFormattedRule("SecRule","REQUEST_METHOD",method,"t:none,chain")
+        printFormattedRule("SecRule","REQUEST_METHOD",method.upper(),"t:none,chain")
 
         arguments = swagger.getEndpointArguments(endpoint,method)
         printFormattedRule("SecRule","ARGS_NAMES","!^({})$".format("|".join(arguments)),"t:none")
         printWhiteline()
 
-        tag = "{}/PARAMETER_TYPE_VALIDATION".format(options.tag)
+        
         for argument in arguments:
             validator = swagger.getEndpointURIParameterValidator(endpoint,argument,method)
             if validator != "":
 
+                tag = "{}/PARAMETER_TYPE_VALIDATION".format(options.tag)
                 printFormattedRule("SecRule","REQUEST_URI",endpointURI,"id:{0},phase:request,t:none,log,tag:'{1}',{2},chain".format(ruleId,tag,blockAction))
-                printFormattedRule("SecRule","REQUEST_METHOD",method,"t:none,chain")
-
+                printFormattedRule("SecRule","REQUEST_METHOD",method.upper(),"t:none,chain")
                 printFormattedRule("SecRule","ARGS:{}".format(argument),"!^({})$".format(validator),"t:none")
                 printWhiteline()
 
+            tag = "{}/PARAMETER_COUNT_VALIDATION".format(options.tag)
+            printFormattedRule("SecRule","REQUEST_URI",endpointURI,"id:{0},phase:request,t:none,log,tag:'{1}',{2},chain".format(ruleId,tag,blockAction))
+            printFormattedRule("SecRule","REQUEST_METHOD",method.upper(),"t:none,chain")
+            printFormattedRule("SecRule","&ARGS:{}".format(argument),"@gt 1","t:none")
+            printWhiteline()
 
 # Print deny-all rule
 tag = "{}/DENY_ALL".format(options.tag)
