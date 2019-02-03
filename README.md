@@ -32,7 +32,7 @@ Create ruleset file:
 Test it (the second test fails because the test is incomplete, but I want to verify the log dump)
 
     python3 testcontainer.py --no-restart -i SAMPLE1.json
-    2019-02-03 15:58:24 automan testcontainer[11984] INFO YAML converted file is /dataswagger2modsec/swagger.yaml
+    2019-02-03 15:58:24 automan testcontainer[11984] INFO YAML converted file is /data/swagger2modsec/swagger.yaml
     2019-02-03 15:58:24 automan testcontainer[11984] INFO Ruleset input file is /data/swagger2modsec/SAMPLE1.conf
     2019-02-03 15:58:24 automan testcontainer[11984] INFO Proxy Server is already running: swagger-proxyserver (image angeloxx/modsecurity-crs-rp:v3.1) on port 8001
     2019-02-03 15:58:24 automan testcontainer[11984] INFO Mock Server is already running: swagger-mockserver (image palo/swagger-api-mock:latest) on port 8000
