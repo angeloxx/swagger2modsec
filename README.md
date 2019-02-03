@@ -17,8 +17,18 @@ Remember that the only valid Linux distribution is Debian.
 
 # Usage
 
+## Create rules
+
     python3 swagger2modsec.py -i https://raw.githubusercontent.com/OAI/OpenAPI-Specification/master/examples/v2.0/json/uber.json
     python3 swagger2modsec.py -i https://raw.githubusercontent.com/OAI/OpenAPI-Specification/master/examples/v2.0/json/petstore-with-external-docs.json
+
+## Test rules
+
+You can use testcontainer.py script to test generated rules (TBD). This script:
+
+* starts a Docker container that implements a backend web server (using swagge-api-mock) that implements the described api
+* starts an Apache web server with modsecurity and CRS that proxies requests to the backend server and use generated rules
+* performs requests against APIs (TBD) and reports Apache's error log to verify denied requests
 
 ## Generate rules with SAMPLE1.json data and test it
 
