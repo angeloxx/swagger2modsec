@@ -1,5 +1,7 @@
 in.json
 out.conf
 out.inc
+out.yaml
 *.pyc
 .vscode
+swagger.yaml

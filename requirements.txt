@@ -1,2 +1,6 @@
 requests
 py_essentials
+simplejson
+pyyaml
+coloredlogs
+docker

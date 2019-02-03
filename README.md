@@ -20,20 +20,41 @@ Remember that the only valid Linux distribution is Debian.
     python3 swagger2modsec.py -i https://raw.githubusercontent.com/OAI/OpenAPI-Specification/master/examples/v2.0/json/uber.json
     python3 swagger2modsec.py -i https://raw.githubusercontent.com/OAI/OpenAPI-Specification/master/examples/v2.0/json/petstore-with-external-docs.json
 
-## Use in a Windows development environment
+## Generate rules with SAMPLE1.json data and test it
 
-Using a Windows-based host with Linux services you can start a web server and test rules
 
-    sudo apt install -y libapache2-mod-security apache2
-    sudo a2enmod security2
-    sudo rm /etc/apache2/sites-enabled/000*
-    sudo ln -s $(pwd)/apache2/vhost.conf /etc/apache2/sites-enabled/
-    sudo ln -s $(pwd)/out.inc /etc/apache2/sites-enabled/
+Create ruleset file:
 
-    python3 swagger2modsec.py -i SAMPLE1.json -o out.inc
-    sudo service apache2 restart
-    
+    python3 swagger2modsec.py -i SAMPLE1.json -o SAMPLE1.conf
+    2019-02-03 15:12:35 automan swagger2modsec[8622] INFO Swagger input file readed
+
+
+Test it (the second test fails because the test is incomplete, but I want to verify the log dump)
+
+    python3 testcontainer.py --no-restart -i SAMPLE1.json
+    2019-02-03 15:58:24 automan testcontainer[11984] INFO YAML converted file is /dataswagger2modsec/swagger.yaml
+    2019-02-03 15:58:24 automan testcontainer[11984] INFO Ruleset input file is /data/swagger2modsec/SAMPLE1.conf
+    2019-02-03 15:58:24 automan testcontainer[11984] INFO Proxy Server is already running: swagger-proxyserver (image angeloxx/modsecurity-crs-rp:v3.1) on port 8001
+    2019-02-03 15:58:24 automan testcontainer[11984] INFO Mock Server is already running: swagger-mockserver (image palo/swagger-api-mock:latest) on port 8000
+    2019-02-03 15:58:24 automan testcontainer[11984] INFO OK, web server is ready
+    2019-02-03 15:58:24 automan testcontainer[11984] INFO == URL /pets
+    2019-02-03 15:58:24 automan testcontainer[11984] INFO XFcBkEk76vJfj0adVvFalQAAAJY: Tested '/pets', expected 200 returned 200
+    2019-02-03 15:58:24 automan testcontainer[11984] INFO == URL /pets/{id}
+    2019-02-03 15:58:24 automan testcontainer[11984] WARNING XFcBkDubr3gToavZgzXkygAAAEg: Tested '/pets/{id}', expected 200 returned 403
+    2019-02-03 15:58:25 automan testcontainer[11984] INFO XFcBkDubr3gToavZgzXkygAAAEg: [2019-02-03 14:58:24.902651] [authz_core:debug] 172.17.0.1:44791 XFcBkDubr3gToavZgzXkygAAAEg AH01628: authorization result: granted (no directives)
+    2019-02-03 15:58:25 automan testcontainer[11984] INFO XFcBkDubr3gToavZgzXkygAAAEg: [2019-02-03 14:58:24.919097] [-:error] 172.17.0.1:44791 XFcBkDubr3gToavZgzXkygAAAEg [client 172.17.0.1] ModSecurity: Warning. Unconditional match in SecAction. [file "/etc/apache2/modsecurity.d/owasp-crs/rules/swagger.conf"] [line "5"] [id "10000"] [hostname "localhost"] [uri "/pets/{id}"] [unique_id "XFcBkDubr3gToavZgzXkygAAAEg"]
+    2019-02-03 15:58:25 automan testcontainer[11984] INFO XFcBkDubr3gToavZgzXkygAAAEg: [2019-02-03 14:58:24.919336] [-:error] 172.17.0.1:44791 XFcBkDubr3gToavZgzXkygAAAEg [client 172.17.0.1] ModSecurity: Access denied with code 403 (phase 2). Pattern match "No" at ENV. [file "/etc/apache2/modsecurity.d/owasp-crs/rules/swagger.conf"] [line "46"] [id "10012"] [tag "SWAGGER/DENY_ALL"] [hostname "localhost"] [uri "/pets/{id}"] [unique_id "XFcBkDubr3gToavZgzXkygAAAEg"]
+    2019-02-03 15:58:25 automan testcontainer[11984] INFO XFcBkDubr3gToavZgzXkygAAAEg: [2019-02-03 14:58:24.919621] [authz_core:debug] 172.17.0.1:44791 XFcBkDubr3gToavZgzXkygAAAEg AH01626: authorization result of Require all granted: granted
+    2019-02-03 15:58:25 automan testcontainer[11984] INFO XFcBkDubr3gToavZgzXkygAAAEg: [2019-02-03 14:58:24.919640] [authz_core:debug] 172.17.0.1:44791 XFcBkDubr3gToavZgzXkygAAAEg AH01626: authorization result of <RequireAny>: granted
+    2019-02-03 15:58:25 automan testcontainer[11984] INFO XFcBkDubr3gToavZgzXkygAAAEg: [2019-02-03 14:58:24.959251] [-:error] 172.17.0.1:44791 XFcBkDubr3gToavZgzXkygAAAEg [client 172.17.0.1] ModSecurity: Audit log: Failed to create subdirectories: /var/log/apache2/audit//20190203/20190203-1458 (Permission denied) [hostname "localhost"] [uri "/error/403.html"] [unique_id "XFcBkDubr3gToavZgzXkygAAAEg"]
+
 
 # TODO
 
-* integrate pymodsecurity to test syntax and block actions (based on standard pattern that breaks the swagger contract)
+* implementation of rule tests
+* better integration with docker api
+
+# See also
+
+* https://coreruleset.org/20181212/core-rule-set-docker-image/
+* https://github.com/angeloxx/modsecurity-crs-rp forked image that returns X-Request-Id header
