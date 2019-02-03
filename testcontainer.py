@@ -51,7 +51,10 @@ class Tester:
             logger.info("Testing /{0}".format(url))
 
 
-        self.lastRequestId = r.headers["X-Request-ID"]
+        if "X-Request-ID" in r.headers:
+            self.lastRequestId = r.headers["X-Request-ID"]
+        else:
+            self.lastRequestId = "N/A"
         return r.status_code
 
 
@@ -154,10 +157,9 @@ if not proxyServer["is_running"]:
     waitCounter = 10
     while waitCounter > 0:
         if tester.testGET("/") > 0:
-            waitCounter = -1
-        else:
-            time.sleep(1)
+            waitCounter = 0
         waitCounter = waitCounter - 1
+        time.sleep(1)
 
 # Once containers are started, start tests
 if tester.testGET("/") > 0:
